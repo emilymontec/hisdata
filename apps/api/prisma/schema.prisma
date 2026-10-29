@@ -1,0 +1,554 @@
+// HISDATA - Esquema de base de datos (PostgreSQL)
+//
+// Módulos EXCLUIDOS deliberadamente de este esquema (ver docs/gestion/decisiones-pendientes.md):
+//  - Facturación y administración: requiere reglas tarifarias/contables aprobadas.
+//  - Integraciones e interoperabilidad: requiere contratos externos definidos (HL7/FHIR u otros).
+// Las reglas CLÍNICAS específicas (códigos diagnósticos oficiales, interacciones medicamentosas,
+// validación de resultados, etc.) NO están implementadas: los campos quedan preparados pero sin
+// lógica de decisión automatizada, hasta que un responsable clínico las valide.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Auth / Usuarios
+// ──────────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  LOCKED
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  code        String   @unique // ADMIN, MEDICO, ENFERMERIA, ADMINISTRATIVO, PACIENTE, AUDITOR
+  name        String
+  permissions Permission[] @relation("RolePermissions")
+  users       User[]
+  createdAt   DateTime @default(now())
+}
+
+model Permission {
+  id    String @id @default(uuid())
+  code  String @unique // ej: patients.read, patients.write, clinical_record.read
+  roles Role[] @relation("RolePermissions")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  status        UserStatus   @default(ACTIVE)
+  roleId        String
+  role          Role         @relation(fields: [roleId], references: [id])
+  mustChangePassword Boolean @default(false)
+  failedLoginAttempts Int    @default(0)
+  lastLoginAt   DateTime?
+  refreshTokens RefreshToken[]
+  resetTokens   PasswordResetToken[]
+  patient       Patient?     @relation("UserPatient")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relaciones inversas (acciones realizadas por este usuario en otros módulos)
+  appointmentsAsPractitioner    Appointment[]        @relation("AppointmentPractitioner")
+  clinicalNotesAuthored         ClinicalNote[]        @relation("NoteAuthor")
+  diagnosesRegistered           Diagnosis[]           @relation("DiagnosisAuthor")
+  consultationsAsPractitioner   Consultation[]        @relation("ConsultationPractitioner")
+  nursingNotesAuthored          NursingNote[]         @relation("NursingAuthor")
+  medicalOrdersRequested        MedicalOrder[]        @relation("OrderRequester")
+  labResultsValidated           LabResult[]           @relation("LabValidator")
+  imagingReportsAuthored        ImagingReport[]       @relation("ImagingReporter")
+  prescriptionsIssued           Prescription[]        @relation("Prescriber")
+  dispensationsPerformed        DispensationRecord[]  @relation("Dispenser")
+  inventoryMovementsRegistered  InventoryMovement[]   @relation("InventoryRegistrar")
+  certificatesIssued            Certificate[]         @relation("CertificateIssuer")
+  notificationsReceived         Notification[]        @relation("NotificationUser")
+  auditLogsAsActor              AuditLog[]             @relation("AuditActor")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Pacientes
+// ──────────────────────────────────────────────────────────────────────────
+
+enum DocumentType {
+  CC
+  TI
+  CE
+  PASAPORTE
+  REGISTRO_CIVIL
+  OTRO
+}
+
+model Patient {
+  id              String       @id @default(uuid())
+  documentType    DocumentType
+  documentNumber  String
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime
+  sex             String
+  phone           String?
+  email           String?
+  address         String?
+  linkedUserId    String?      @unique
+  linkedUser      User?        @relation("UserPatient", fields: [linkedUserId], references: [id])
+  duplicateOfId   String?      // referencia sugerida por el detector de duplicados, pendiente de confirmación manual
+  appointments    Appointment[]
+  clinicalRecord  ClinicalRecord?
+  admissions      Admission[]
+  medicalOrders   MedicalOrder[]
+  prescriptions   Prescription[]
+  certificates    Certificate[]
+  notifications   Notification[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([documentType, documentNumber])
+  @@index([lastName, firstName])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Citas y agenda
+// ──────────────────────────────────────────────────────────────────────────
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  RESCHEDULED
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  patientId       String
+  patient         Patient           @relation(fields: [patientId], references: [id])
+  practitionerId  String
+  practitioner    User              @relation(fields: [practitionerId], references: [id], name: "AppointmentPractitioner")
+  startsAt        DateTime
+  endsAt          DateTime
+  status          AppointmentStatus @default(SCHEDULED)
+  reason          String?
+  rescheduledFromId String?
+  consultation    Consultation?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Historia clínica electrónica (estructura básica)
+// ──────────────────────────────────────────────────────────────────────────
+
+model ClinicalRecord {
+  id          String   @id @default(uuid())
+  patientId   String   @unique
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  notes       ClinicalNote[]
+  diagnoses   Diagnosis[]
+  consultations Consultation[]
+  createdAt   DateTime @default(now())
+}
+
+model ClinicalNote {
+  id               String        @id @default(uuid())
+  clinicalRecordId String
+  clinicalRecord   ClinicalRecord @relation(fields: [clinicalRecordId], references: [id])
+  authorId         String
+  author           User          @relation(fields: [authorId], references: [id], name: "NoteAuthor")
+  content          String
+  // La estructura de firma/validación clínica queda pendiente de definición con responsables sanitarios.
+  signedAt         DateTime?
+  createdAt        DateTime      @default(now())
+}
+
+model Diagnosis {
+  id               String        @id @default(uuid())
+  clinicalRecordId String
+  clinicalRecord   ClinicalRecord @relation(fields: [clinicalRecordId], references: [id])
+  // code/codeSystem quedan listos para CIE-10 u otro estándar, sin validar todavía.
+  code             String?
+  codeSystem       String?
+  description      String
+  registeredById   String
+  registeredBy     User          @relation(fields: [registeredById], references: [id], name: "DiagnosisAuthor")
+  createdAt        DateTime      @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Consultas médicas
+// ──────────────────────────────────────────────────────────────────────────
+
+model Consultation {
+  id               String        @id @default(uuid())
+  appointmentId    String?       @unique
+  appointment      Appointment?  @relation(fields: [appointmentId], references: [id])
+  clinicalRecordId String
+  clinicalRecord   ClinicalRecord @relation(fields: [clinicalRecordId], references: [id])
+  practitionerId   String
+  practitioner     User          @relation(fields: [practitionerId], references: [id], name: "ConsultationPractitioner")
+  reason           String
+  findings         String?
+  plan             String?
+  orders           MedicalOrder[]
+  prescriptions    Prescription[]
+  createdAt        DateTime      @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Enfermería
+// ──────────────────────────────────────────────────────────────────────────
+
+model NursingNote {
+  id          String   @id @default(uuid())
+  admissionId String?
+  admission   Admission? @relation(fields: [admissionId], references: [id])
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], name: "NursingAuthor")
+  observation String
+  vitalSigns  Json?
+  createdAt   DateTime @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Admisiones, traslados y egresos
+// ──────────────────────────────────────────────────────────────────────────
+
+enum AdmissionStatus {
+  ADMITTED
+  TRANSFERRED
+  DISCHARGED
+}
+
+model Ward {
+  id    String @id @default(uuid())
+  name  String @unique
+  beds  Bed[]
+}
+
+model Bed {
+  id          String   @id @default(uuid())
+  wardId      String
+  ward        Ward     @relation(fields: [wardId], references: [id])
+  code        String
+  isOccupied  Boolean  @default(false)
+  admissions  Admission[]
+
+  @@unique([wardId, code])
+}
+
+model Admission {
+  id            String          @id @default(uuid())
+  patientId     String
+  patient       Patient         @relation(fields: [patientId], references: [id])
+  bedId         String?
+  bed           Bed?            @relation(fields: [bedId], references: [id])
+  status        AdmissionStatus @default(ADMITTED)
+  admittedAt    DateTime        @default(now())
+  dischargedAt  DateTime?
+  transfers     Transfer[]
+  nursingNotes  NursingNote[]
+}
+
+model Transfer {
+  id          String    @id @default(uuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+  fromBedId   String?
+  toBedId     String
+  reason      String?
+  createdAt   DateTime  @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Órdenes médicas y procedimientos
+// ──────────────────────────────────────────────────────────────────────────
+
+enum MedicalOrderType {
+  LABORATORY
+  IMAGING
+  PROCEDURE
+}
+
+enum MedicalOrderStatus {
+  REQUESTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model MedicalOrder {
+  id              String             @id @default(uuid())
+  patientId       String
+  patient         Patient            @relation(fields: [patientId], references: [id])
+  consultationId  String?
+  consultation    Consultation?      @relation(fields: [consultationId], references: [id])
+  requestedById   String
+  requestedBy     User               @relation(fields: [requestedById], references: [id], name: "OrderRequester")
+  type            MedicalOrderType
+  description     String
+  status          MedicalOrderStatus @default(REQUESTED)
+  labRequest      LabRequest?
+  imagingRequest  ImagingRequest?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Laboratorio clínico
+// ──────────────────────────────────────────────────────────────────────────
+
+enum LabRequestStatus {
+  PENDING
+  SAMPLE_COLLECTED
+  RESULT_REGISTERED
+  VALIDATED
+  PUBLISHED
+}
+
+model LabRequest {
+  id             String           @id @default(uuid())
+  medicalOrderId String           @unique
+  medicalOrder   MedicalOrder     @relation(fields: [medicalOrderId], references: [id])
+  status         LabRequestStatus @default(PENDING)
+  sampleCollectedAt DateTime?
+  results        LabResult[]
+  createdAt      DateTime         @default(now())
+}
+
+model LabResult {
+  id            String     @id @default(uuid())
+  labRequestId  String
+  labRequest    LabRequest @relation(fields: [labRequestId], references: [id])
+  parameter     String
+  value         String
+  unit          String?
+  referenceRange String?
+  // La validación/publicación clínica del resultado queda pendiente de flujo aprobado.
+  validatedById String?
+  validatedBy   User?      @relation(fields: [validatedById], references: [id], name: "LabValidator")
+  validatedAt   DateTime?
+  createdAt     DateTime   @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Imagenología
+// ──────────────────────────────────────────────────────────────────────────
+
+enum ImagingRequestStatus {
+  PENDING
+  IN_PROGRESS
+  REPORTED
+}
+
+model ImagingRequest {
+  id             String                @id @default(uuid())
+  medicalOrderId String                @unique
+  medicalOrder   MedicalOrder          @relation(fields: [medicalOrderId], references: [id])
+  modality       String // RX, TAC, RM, ECO, etc.
+  status         ImagingRequestStatus  @default(PENDING)
+  report         ImagingReport?
+  createdAt      DateTime              @default(now())
+}
+
+model ImagingReport {
+  id               String         @id @default(uuid())
+  imagingRequestId String         @unique
+  imagingRequest   ImagingRequest @relation(fields: [imagingRequestId], references: [id])
+  reportedById     String
+  reportedBy       User           @relation(fields: [reportedById], references: [id], name: "ImagingReporter")
+  findings         String
+  documentUrl      String?
+  createdAt        DateTime       @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Prescripciones médicas (estructura; reglas clínicas pendientes de validación)
+// ──────────────────────────────────────────────────────────────────────────
+
+enum PrescriptionStatus {
+  ACTIVE
+  DISPENSED
+  CANCELLED
+  EXPIRED
+}
+
+model Prescription {
+  id             String              @id @default(uuid())
+  patientId      String
+  patient        Patient             @relation(fields: [patientId], references: [id])
+  consultationId String?
+  consultation   Consultation?       @relation(fields: [consultationId], references: [id])
+  prescribedById String
+  prescribedBy   User                @relation(fields: [prescribedById], references: [id], name: "Prescriber")
+  status         PrescriptionStatus  @default(ACTIVE)
+  items          PrescriptionItem[]
+  createdAt      DateTime            @default(now())
+}
+
+model PrescriptionItem {
+  id              String        @id @default(uuid())
+  prescriptionId  String
+  prescription    Prescription  @relation(fields: [prescriptionId], references: [id])
+  medicationId    String?
+  medication      Medication?   @relation(fields: [medicationId], references: [id])
+  freeTextDrug    String?       // usado si el medicamento no está en catálogo todavía
+  dosageInstructions String
+  dispensations   DispensationRecord[]
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Farmacia
+// ──────────────────────────────────────────────────────────────────────────
+
+model Medication {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  presentation String
+  stock       PharmacyStock[]
+  items       PrescriptionItem[]
+}
+
+model PharmacyStock {
+  id            String     @id @default(uuid())
+  medicationId  String
+  medication    Medication @relation(fields: [medicationId], references: [id])
+  batchNumber   String
+  quantity      Int
+  expiresAt     DateTime?
+
+  @@unique([medicationId, batchNumber])
+}
+
+model DispensationRecord {
+  id                   String           @id @default(uuid())
+  prescriptionItemId   String
+  prescriptionItem     PrescriptionItem @relation(fields: [prescriptionItemId], references: [id])
+  dispensedById        String
+  dispensedBy          User             @relation(fields: [dispensedById], references: [id], name: "Dispenser")
+  quantity             Int
+  dispensedAt          DateTime         @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Inventario y recursos hospitalarios (no farmacéuticos)
+// ──────────────────────────────────────────────────────────────────────────
+
+model InventoryItem {
+  id         String   @id @default(uuid())
+  name       String
+  category   String
+  quantity   Int      @default(0)
+  movements  InventoryMovement[]
+}
+
+enum InventoryMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+model InventoryMovement {
+  id              String                @id @default(uuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem         @relation(fields: [inventoryItemId], references: [id])
+  type            InventoryMovementType
+  quantity        Int
+  registeredById  String
+  registeredBy    User                  @relation(fields: [registeredById], references: [id], name: "InventoryRegistrar")
+  createdAt       DateTime              @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Certificados y remisiones
+// ──────────────────────────────────────────────────────────────────────────
+
+enum CertificateType {
+  CONSTANCIA_ATENCION
+  REMISION
+  INCAPACIDAD
+  OTRO
+}
+
+model Certificate {
+  id          String          @id @default(uuid())
+  patientId   String
+  patient     Patient         @relation(fields: [patientId], references: [id])
+  type        CertificateType
+  issuedById  String
+  issuedBy    User            @relation(fields: [issuedById], references: [id], name: "CertificateIssuer")
+  content     String
+  documentUrl String?
+  createdAt   DateTime        @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Notificaciones
+// ──────────────────────────────────────────────────────────────────────────
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+model Notification {
+  id         String              @id @default(uuid())
+  recipientPatientId String?
+  recipientPatient   Patient?     @relation(fields: [recipientPatientId], references: [id])
+  recipientUserId    String?
+  recipientUser      User?        @relation(fields: [recipientUserId], references: [id], name: "NotificationUser")
+  channel    NotificationChannel @default(IN_APP)
+  title      String
+  body       String
+  readAt     DateTime?
+  createdAt  DateTime            @default(now())
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Auditoría y seguridad (transversal, obligatorio desde el día 1)
+// ──────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  actorUser   User?    @relation(fields: [actorUserId], references: [id], name: "AuditActor")
+  action      String   // ej: PATIENT_CREATE, CLINICAL_NOTE_READ, LOGIN_FAILED
+  entityType  String?
+  entityId    String?
+  ipAddress   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+}

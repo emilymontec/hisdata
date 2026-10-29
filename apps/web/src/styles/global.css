@@ -1,0 +1,180 @@
+:root {
+  --color-bg: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-ink: #16241f;
+  --color-ink-soft: #4a584f;
+  --color-primary: #0f3b35;
+  --color-primary-contrast: #f6f4ef;
+  --color-accent: #3b5ba5;
+  --color-line: #d9d3c4;
+  --color-warn: #a4502a;
+  --font-display: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 0.5rem;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100%;
+}
+
+.app-sidebar {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.app-sidebar .brand {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+}
+
+.app-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.app-sidebar nav a {
+  color: var(--color-primary-contrast);
+  text-decoration: none;
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.app-sidebar nav a:hover {
+  background: rgba(246, 244, 239, 0.08);
+  opacity: 1;
+}
+
+.app-main {
+  padding: 2rem 2.5rem;
+}
+
+.auth-screen {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  padding: 2rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 2.25rem 2rem;
+}
+
+.auth-card .brand {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.auth-card .subtitle {
+  color: var(--color-ink-soft);
+  margin-bottom: 1.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.field input {
+  border: 1px solid var(--color-line);
+  padding: 0.6rem 0.7rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border: none;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: var(--color-warn);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 1.5rem;
+}

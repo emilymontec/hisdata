@@ -1,0 +1,16 @@
+{
+  "name": "hisdata",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HISDATA — sistema de información hospitalario",
+  "workspaces": ["apps/api", "apps/web"],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web",
+    "build:api": "npm run build --workspace apps/api",
+    "build:web": "npm run build --workspace apps/web",
+    "db:up": "docker compose -f infrastructure/containers/docker-compose.yml up -d postgres",
+    "db:migrate": "npm run prisma:migrate --workspace apps/api",
+    "db:seed": "npm run prisma:seed --workspace apps/api"
+  }
+}
