@@ -6,6 +6,11 @@ const NAV_ITEMS = [
   { to: '/pacientes', label: 'Pacientes' },
   { to: '/citas', label: 'Citas' },
   { to: '/historia-clinica', label: 'Historia clínica' },
+  { to: '/consultas', label: 'Consultas' },
+  { to: '/ordenes', label: 'Órdenes médicas' },
+  { to: '/prescripciones', label: 'Prescripciones' },
+  { to: '/admisiones', label: 'Admisiones' },
+  { to: '/farmacia', label: 'Farmacia' },
 ];
 
 export function AppShell() {
