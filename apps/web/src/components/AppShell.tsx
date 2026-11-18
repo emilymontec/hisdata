@@ -1,54 +1,85 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Inicio' },
-  { to: '/pacientes', label: 'Pacientes' },
-  { to: '/citas', label: 'Citas' },
-  { to: '/historia-clinica', label: 'Historia clínica' },
-  { to: '/consultas', label: 'Consultas' },
-  { to: '/enfermeria', label: 'Enfermería' },
-  { to: '/admisiones', label: 'Admisiones' },
-  { to: '/ordenes', label: 'Órdenes médicas' },
-  { to: '/laboratorio', label: 'Laboratorio' },
-  { to: '/imagenologia', label: 'Imagenología' },
-  { to: '/prescripciones', label: 'Prescripciones' },
-  { to: '/farmacia', label: 'Farmacia' },
-  { to: '/inventario', label: 'Inventario' },
-  { to: '/certificados', label: 'Certificados' },
-  { to: '/notificaciones', label: 'Notificaciones' },
-  { to: '/auditoria', label: 'Auditoría' },
+const NAV_GROUPS = [
+  {
+    label: 'General',
+    items: [
+      { to: '/', label: 'Inicio' },
+      { to: '/pacientes', label: 'Pacientes' },
+      { to: '/citas', label: 'Citas' },
+    ],
+  },
+  {
+    label: 'Atención clínica',
+    items: [
+      { to: '/historia-clinica', label: 'Historia clínica' },
+      { to: '/consultas', label: 'Consultas' },
+      { to: '/enfermeria', label: 'Enfermería' },
+      { to: '/admisiones', label: 'Admisiones' },
+    ],
+  },
+  {
+    label: 'Apoyo diagnóstico y terapéutico',
+    items: [
+      { to: '/ordenes', label: 'Órdenes médicas' },
+      { to: '/laboratorio', label: 'Laboratorio' },
+      { to: '/imagenologia', label: 'Imagenología' },
+      { to: '/prescripciones', label: 'Prescripciones' },
+      { to: '/farmacia', label: 'Farmacia' },
+    ],
+  },
+  {
+    label: 'Administración',
+    items: [
+      { to: '/inventario', label: 'Inventario' },
+      { to: '/certificados', label: 'Certificados' },
+      { to: '/notificaciones', label: 'Notificaciones' },
+      { to: '/auditoria', label: 'Auditoría' },
+    ],
+  },
 ];
+
+function initials(firstName?: string, lastName?: string) {
+  return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+}
 
 export function AppShell() {
   const { user, logout } = useAuth();
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
-        <div className="brand">HISDATA</div>
-        <nav>
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === '/'}>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div style={{ marginTop: 'auto', fontSize: '0.85rem', opacity: 0.85 }}>
-          <div>{user?.firstName} {user?.lastName}</div>
-          <div>{user?.role}</div>
-          <button
-            className="btn-primary"
-            style={{ marginTop: '0.75rem', background: 'transparent', border: '1px solid rgba(246,244,239,0.4)' }}
-            onClick={logout}
-          >
-            Cerrar sesión
-          </button>
+      <header className="app-topbar">
+        <div className="app-topbar-brand">
+          <span className="brand-mark">H</span>
+          <span>HISDATA</span>
         </div>
-      </aside>
-      <main className="app-main">
-        <Outlet />
-      </main>
+        <div className="app-topbar-user">
+          <span className="app-topbar-role">{user?.role}</span>
+          <span className="avatar">{initials(user?.firstName, user?.lastName)}</span>
+          <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
+        </div>
+      </header>
+
+      <div className="app-body">
+        <aside className="app-sidebar">
+          <nav>
+            {NAV_GROUPS.map((group) => (
+              <div key={group.label} className="nav-group">
+                <div className="nav-group-label">{group.label}</div>
+                {group.items.map((item) => (
+                  <NavLink key={item.to} to={item.to} end={item.to === '/'}>
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+          </nav>
+        </aside>
+        <main className="app-main">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

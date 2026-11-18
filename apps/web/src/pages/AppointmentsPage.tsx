@@ -57,8 +57,8 @@ export function AppointmentsPage() {
     <div>
       <h1>Citas y agenda</h1>
       <p className="provisional-notice">
-        Interfaz provisional — sin selector de profesional todavía (se usa el usuario con sesión
-        activa); se reemplazará en el frontend oficial.
+        Sin selector de profesional todavía — se usa el usuario con sesión activa como profesional
+        de la cita hasta que se agregue ese selector.
       </p>
 
       <PatientPicker onSelect={loadAppointments} selected={patient} />

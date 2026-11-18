@@ -102,16 +102,17 @@
 
 **Las 16 pantallas provisionales del flujo operativo ya existen.** Lo que falta en esta fase es: dispensación desde Farmacia, traslado/egreso desde Admisiones, carga real de archivos en Imagenología/Certificados (depende de ADR-004), y un endpoint de "admisiones por paciente" que simplifique Enfermería.
 
-> Todo el frontend actual es **provisional**: funcional para probar el backend de punta a punta, pero sin el diseño visual definitivo. Se reemplazará por el frontend oficial en una fase posterior (ver Fase 5-B).
+> El frontend ya usa el **sistema visual oficial** (ver Fase 5-B). Lo que sigue siendo incremental es la cobertura funcional de cada módulo, no el diseño.
 
-## Fase 5-B — Frontend oficial ⬜
+## Fase 5-B — Frontend oficial ✅ (diseño) / 🟡 (cobertura funcional)
 
 | Elemento | Estado |
 |---|---|
-| Definición de sistema visual definitivo (`docs/diseno/sistema-visual.md`) | ⬜ |
-| Componentes de UI reutilizables (`docs/diseno/componentes-ui.md`) | ⬜ |
+| Definición de sistema visual definitivo (`docs/diseno/sistema-visual.md`) | ✅ Estilo Jira/Atlassian, paleta `#3485F4` / `#08B3D6` / blanco, tipografía sans-serif del sistema |
+| Aplicación del sistema visual sobre `apps/web` | ✅ `global.css` reescrito con los tokens oficiales; `AppShell` rediseñado con barra superior + sidebar agrupado por categoría, al estilo Jira |
+| Cobertura funcional de los 16 módulos | 🟡 Misma cobertura que antes del cambio visual — el rediseño fue de estilo, no agregó funcionalidad nueva (ver limitaciones por módulo en Fase 5) |
+| Componentes de UI reutilizables (`docs/diseno/componentes-ui.md`) | ⬜ No documentado como guía de componentes aparte; los patrones viven directamente en `global.css` (`.card`, `.badge`, `.btn-primary`, tabla, etc.) |
 | Accesibilidad formal (`docs/diseno/accesibilidad.md`) | ⬜ |
-| Reemplazo del frontend provisional por el oficial | ⬜ |
 
 ## Fase 6 — Verificación ⬜
 

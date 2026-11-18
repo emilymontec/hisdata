@@ -1,15 +1,26 @@
+/* HISDATA — sistema visual oficial
+   Referencia de estilo: Jira/Atlassian. Paleta y tipografía definidas por el cliente
+   (ver docs/diseno/sistema-visual.md). No modificar estos tokens sin actualizar ese documento. */
+
 :root {
-  --color-bg: #f6f4ef;
+  --color-primary: #3485f4;
+  --color-primary-hover: #2a6cd4;
+  --color-primary-soft: #eaf2ff;
+  --color-accent: #08b3d6;
+  --color-bg-page: #f4f5f7;
   --color-surface: #ffffff;
-  --color-ink: #16241f;
-  --color-ink-soft: #4a584f;
-  --color-primary: #0f3b35;
-  --color-primary-contrast: #f6f4ef;
-  --color-accent: #3b5ba5;
-  --color-line: #d9d3c4;
-  --color-warn: #a4502a;
-  --font-display: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-text: #172b4d;
+  --color-text-muted: #6b778c;
+  --color-border: #dfe1e6;
+  --color-danger: #de350b;
+  --color-danger-soft: #ffebe6;
+  --color-success: #00875a;
+  --color-success-soft: #e3fcef;
+  --color-warning: #974f0c;
+  --color-warning-soft: #fffae6;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --radius: 3px;
 }
 
 * {
@@ -24,24 +35,35 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-ink);
+  background: var(--color-bg-page);
+  color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 600;
-  color: var(--color-primary);
-  margin: 0 0 0.5rem;
+  color: var(--color-text);
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.45rem;
+}
+
+h2 {
+  font-size: 1.05rem;
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
 button {
@@ -56,78 +78,158 @@ textarea {
   font-size: inherit;
 }
 
+/* ---------- Layout: barra superior + sidebar (estilo Jira) ---------- */
+
 .app-shell {
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: 100%;
 }
 
-.app-sidebar {
+.app-topbar {
+  height: 56px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: var(--color-primary);
-  color: var(--color-primary-contrast);
-  padding: 1.5rem 1.25rem;
+  color: #fff;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
-.app-sidebar .brand {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  letter-spacing: 0.01em;
+.app-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.app-sidebar nav {
+.app-topbar-role {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 0;
+}
+
+.app-sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+
+.nav-group {
+  margin-bottom: 1.25rem;
+}
+
+.nav-group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  padding: 0 0.6rem 0.4rem;
 }
 
 .app-sidebar nav a {
-  color: var(--color-primary-contrast);
-  text-decoration: none;
-  padding: 0.5rem 0.6rem;
-  border-radius: 4px;
-  opacity: 0.85;
+  display: block;
+  color: var(--color-text);
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  border-left: 3px solid transparent;
+  margin-bottom: 1px;
 }
 
 .app-sidebar nav a:hover {
-  background: rgba(246, 244, 239, 0.08);
-  opacity: 1;
+  background: var(--color-bg-page);
+}
+
+.app-sidebar nav a.active {
+  background: var(--color-primary-soft);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary-hover);
+  font-weight: 600;
 }
 
 .app-main {
-  padding: 2rem 2.5rem;
+  padding: 1.75rem 2.25rem;
+  overflow-y: auto;
 }
+
+/* ---------- Autenticación ---------- */
 
 .auth-screen {
   min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: var(--color-bg-page);
   padding: 2rem;
 }
 
 .auth-card {
   width: 100%;
   max-width: 380px;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   background: var(--color-surface);
   padding: 2.25rem 2rem;
+  box-shadow: 0 1px 2px rgba(23, 43, 77, 0.08);
 }
 
 .auth-card .brand {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  color: var(--color-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text);
   margin-bottom: 0.25rem;
 }
 
 .auth-card .subtitle {
-  color: var(--color-ink-soft);
+  color: var(--color-text-muted);
   margin-bottom: 1.75rem;
+  font-size: 0.9rem;
 }
+
+/* ---------- Formularios ---------- */
 
 .field {
   display: flex;
@@ -137,46 +239,87 @@ textarea {
 }
 
 .field label {
-  font-size: 0.85rem;
-  color: var(--color-ink-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
-.field input {
-  border: 1px solid var(--color-line);
-  padding: 0.6rem 0.7rem;
+.field input,
+.field select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.65rem;
   background: var(--color-surface);
-  color: var(--color-ink);
+  color: var(--color-text);
 }
 
-.field input:focus-visible {
-  outline: 2px solid var(--color-accent);
+.field input:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--color-primary);
   outline-offset: 1px;
+  border-color: var(--color-primary);
 }
 
 .btn-primary {
-  width: 100%;
+  border-radius: var(--radius);
   background: var(--color-primary);
-  color: var(--color-primary-contrast);
+  color: #fff;
   border: none;
-  padding: 0.7rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  border-radius: var(--radius);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+  border: none;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: #d9e8ff;
+}
+
+.btn-ghost {
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.btn-ghost:hover {
+  background: var(--color-bg-page);
+}
+
 .error-text {
-  color: var(--color-warn);
+  color: var(--color-danger);
   font-size: 0.85rem;
   margin-bottom: 1rem;
 }
 
+/* ---------- Superficies ---------- */
+
 .card {
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   background: var(--color-surface);
   padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(23, 43, 77, 0.06);
 }
 
 .toolbar {
@@ -192,31 +335,37 @@ textarea {
   min-width: 220px;
 }
 
-.btn-secondary {
-  background: var(--color-surface);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  padding: 0.55rem 0.9rem;
-  font-size: 0.9rem;
-}
+/* ---------- Tablas ---------- */
 
 table.simple-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 table.simple-table th,
 table.simple-table td {
   text-align: left;
-  padding: 0.55rem 0.6rem;
-  border-bottom: 1px solid var(--color-line);
-  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.86rem;
 }
 
 table.simple-table th {
-  color: var(--color-ink-soft);
-  font-weight: 500;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: var(--color-bg-page);
+}
+
+table.simple-table tr:last-child td {
+  border-bottom: none;
 }
 
 table.simple-table tr.clickable {
@@ -224,8 +373,24 @@ table.simple-table tr.clickable {
 }
 
 table.simple-table tr.clickable:hover {
-  background: rgba(15, 59, 53, 0.04);
+  background: var(--color-primary-soft);
 }
+
+/* ---------- Lozenges / badges (estilo pill de Jira) ---------- */
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-bg-page);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Utilidades ---------- */
 
 .form-grid {
   display: grid;
@@ -233,21 +398,13 @@ table.simple-table tr.clickable:hover {
   gap: 0 1rem;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.1rem 0.5rem;
-  border: 1px solid var(--color-line);
-  font-size: 0.75rem;
-  color: var(--color-ink-soft);
-}
-
 .section-gap {
-  margin-top: 2rem;
+  margin-top: 1.75rem;
 }
 
 .provisional-notice {
   font-size: 0.8rem;
-  color: var(--color-ink-soft);
+  color: var(--color-text-muted);
   border-left: 3px solid var(--color-accent);
   padding-left: 0.6rem;
   margin-bottom: 1.5rem;

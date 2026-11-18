@@ -54,9 +54,9 @@ HISDATA/
 ├── docs/        # Documentación del proyecto (ver docs/proyecto, docs/arquitectura, docs/gestion)
 ```
 
-## Frontend provisional
+## Frontend
 
-El frontend actual (`apps/web`) es **deliberadamente provisional**: cubre Pacientes (búsqueda y registro), Citas (programar/cancelar) e Historia clínica (ver/agregar notas y diagnósticos), con un diseño mínimo funcional. Se reemplazará por el frontend oficial una vez definido el diseño visual definitivo; mientras tanto permite probar el backend de punta a punta. Pendiente notorio: no hay selector de profesional en Citas (se usa el usuario con sesión activa).
+El frontend (`apps/web`) ya usa el **sistema visual oficial** (estilo Jira/Atlassian, paleta `#3485F4`/`#08B3D6`/blanco — ver `docs/diseno/sistema-visual.md`) y cubre los 16 módulos no excluidos. Funcionalmente sigue siendo incremental: varias pantallas tienen limitaciones explícitas documentadas en cada página y en `docs/proyecto/roadmap.md` (ej. sin selector de profesional en Citas, sin pantalla de dispensación en Farmacia).
 
 ## Módulos implementados en esta versión
 

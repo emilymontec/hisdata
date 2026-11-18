@@ -51,7 +51,8 @@ export function PatientsPage() {
     <div>
       <h1>Pacientes</h1>
       <p className="provisional-notice">
-        Interfaz provisional — cubre registro y búsqueda básica mientras se diseña el frontend oficial.
+        Cubre registro y búsqueda básica; funcionalidades más avanzadas (fusión de duplicados,
+        historial de cambios) se agregan en incrementos posteriores.
       </p>
 
       <div className="toolbar">
