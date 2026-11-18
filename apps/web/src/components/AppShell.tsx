@@ -7,10 +7,17 @@ const NAV_ITEMS = [
   { to: '/citas', label: 'Citas' },
   { to: '/historia-clinica', label: 'Historia clínica' },
   { to: '/consultas', label: 'Consultas' },
-  { to: '/ordenes', label: 'Órdenes médicas' },
-  { to: '/prescripciones', label: 'Prescripciones' },
+  { to: '/enfermeria', label: 'Enfermería' },
   { to: '/admisiones', label: 'Admisiones' },
+  { to: '/ordenes', label: 'Órdenes médicas' },
+  { to: '/laboratorio', label: 'Laboratorio' },
+  { to: '/imagenologia', label: 'Imagenología' },
+  { to: '/prescripciones', label: 'Prescripciones' },
   { to: '/farmacia', label: 'Farmacia' },
+  { to: '/inventario', label: 'Inventario' },
+  { to: '/certificados', label: 'Certificados' },
+  { to: '/notificaciones', label: 'Notificaciones' },
+  { to: '/auditoria', label: 'Auditoría' },
 ];
 
 export function AppShell() {

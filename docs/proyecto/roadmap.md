@@ -88,17 +88,19 @@
 | Citas y agenda | 🟡 | Crear/listar/cancelar; **sin selector de profesional** (usa el usuario con sesión activa) |
 | Historia clínica | 🟡 | Ver notas/diagnósticos + agregar (solo rol `MEDICO`); sin firma clínica (no existe en backend) |
 | Consultas médicas | 🟡 | Registro y consulta de historial; sin vínculo a una cita específica desde el formulario |
-| Enfermería | ⬜ | Pendiente |
+| Enfermería | 🟡 | Notas por ID de admisión (ingresado manualmente — no existe endpoint para listar admisiones por paciente); signos vitales en campos libres |
 | Admisiones/camas | 🟡 | Ingreso y disponibilidad de camas; **sin pantallas de traslado ni egreso** (endpoints ya existen en el backend) |
-| Órdenes médicas | 🟡 | Crear y listar por paciente; sin pantalla de cambio de estado manual |
-| Laboratorio | ⬜ | Pendiente |
-| Imagenología | ⬜ | Pendiente |
+| Órdenes médicas | 🟡 | Crear y listar por paciente; muestra el ID de la solicitud de lab/imagen generada; sin pantalla de cambio de estado manual |
+| Laboratorio | 🟡 | Gestión por ID de solicitud (copiado desde Órdenes): toma de muestra, registro de resultados, validar/publicar |
+| Imagenología | 🟡 | Gestión por ID de solicitud: marcar en proceso, registrar informe; sin carga de archivos (ADR-004 pendiente) |
 | Prescripciones | 🟡 | Un medicamento por prescripción (texto libre), cancelar; sin selector de catálogo todavía |
 | Farmacia | 🟡 | Catálogo e ingreso de stock; **sin pantalla de dispensación** |
-| Inventario | ⬜ | Pendiente |
-| Certificados | ⬜ | Pendiente |
-| Notificaciones | ⬜ | Pendiente |
-| Auditoría (vista para `AUDITOR`) | ⬜ | Pendiente |
+| Inventario | 🟡 | Alta de ítems y registro de movimientos (entrada/salida/ajuste) |
+| Certificados | 🟡 | Emisión (texto libre) y consulta por paciente |
+| Notificaciones | 🟡 | Listado de notificaciones del usuario autenticado y marcar como leída |
+| Auditoría (vista para `AUDITOR`) | 🟡 | Consulta filtrable de solo lectura, restringida a `AUDITOR`/`ADMIN` |
+
+**Las 16 pantallas provisionales del flujo operativo ya existen.** Lo que falta en esta fase es: dispensación desde Farmacia, traslado/egreso desde Admisiones, carga real de archivos en Imagenología/Certificados (depende de ADR-004), y un endpoint de "admisiones por paciente" que simplifique Enfermería.
 
 > Todo el frontend actual es **provisional**: funcional para probar el backend de punta a punta, pero sin el diseño visual definitivo. Se reemplazará por el frontend oficial en una fase posterior (ver Fase 5-B).
 
@@ -141,7 +143,7 @@
 ## Resumen ejecutivo del estado actual
 
 - **Backend:** prácticamente completo en estructura para los 16 módulos no excluidos (✅/🟡), con reglas clínicas específicas deliberadamente sin implementar donde requieren validación profesional.
-- **Frontend:** 9 de ~16 pantallas provisionales construidas (Login, Pacientes, Citas, Historia clínica, Consultas, Órdenes, Prescripciones, Admisiones, Farmacia). Faltan: Enfermería, Laboratorio, Imagenología, Inventario, Certificados, Notificaciones, vista de Auditoría.
+- **Frontend:** las 16 pantallas provisionales del flujo operativo están construidas (Login + los 15 módulos no excluidos). Cada una tiene limitaciones explícitas documentadas (ver tabla de Fase 5) — es deliberadamente funcional, no definitivo.
 - **Documentación técnica:** ADR-001 a ADR-003 aceptados, ADR-004 propuesto (pendiente de tu elección), diccionario de datos generado, estrategia de pruebas, guías de instalación/entornos, y planes de monitoreo y backups documentados.
 - **Pruebas automatizadas:** 3 archivos (duplicados de pacientes, solapamiento de citas, dispensación de farmacia) — cubren los casos de mayor riesgo identificados, pero la mayoría de servicios siguen sin prueba.
 - **Nunca ejecutado de verdad:** el proyecto no se ha corrido con `npm install` ni contra una base de datos real — ver `docs/gestion/pendientes-manuales.md`, es el primer paso crítico antes de seguir sumando funcionalidades.

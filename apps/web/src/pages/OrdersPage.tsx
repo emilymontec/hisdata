@@ -88,6 +88,7 @@ export function OrdersPage() {
                 <th>Descripción</th>
                 <th>Estado</th>
                 <th>Fecha</th>
+                <th>Solicitud generada</th>
               </tr>
             </thead>
             <tbody>
@@ -97,11 +98,19 @@ export function OrdersPage() {
                   <td>{o.description}</td>
                   <td><span className="badge">{o.status}</span></td>
                   <td>{new Date(o.createdAt).toLocaleDateString('es-CO')}</td>
+                  <td>
+                    {o.labRequest && <span className="badge">Lab: {o.labRequest.id}</span>}
+                    {o.imagingRequest && <span className="badge">Imagen: {o.imagingRequest.id}</span>}
+                    {!o.labRequest && !o.imagingRequest && '—'}
+                  </td>
                 </tr>
               ))}
-              {orders.length === 0 && <tr><td colSpan={4}>Sin órdenes registradas.</td></tr>}
+              {orders.length === 0 && <tr><td colSpan={5}>Sin órdenes registradas.</td></tr>}
             </tbody>
           </table>
+          <p className="provisional-notice section-gap">
+            Copia el ID de "Solicitud generada" para gestionarla en los módulos de Laboratorio o Imagenología.
+          </p>
         </>
       )}
     </div>
