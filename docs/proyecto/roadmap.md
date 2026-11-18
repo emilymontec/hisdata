@@ -1,6 +1,6 @@
 # Roadmap de HISDATA
 
-Última actualización: 2026-11-17. Este documento se actualiza cada vez que avanza una fase. Convenciones:
+Última actualización: 2026-11-18. Este documento se actualiza cada vez que avanza una fase. **Todo lo marcado como "acción manual" está consolidado y detallado en `docs/gestion/pendientes-manuales.md`** — ese documento es la lista de tareas que requieren que tú (o alguien de la institución) actúe, no algo que yo pueda completar desde este entorno. Convenciones:
 
 - ✅ Hecho
 - 🟡 Parcial / provisional (funciona, pero no es la versión definitiva)
@@ -37,9 +37,9 @@
 | ADR-002 (estilo de arquitectura) | ✅ `docs/arquitectura/decisiones/ADR-002-estilo-arquitectura.md` |
 | Estructura de repositorio | ✅ |
 | Modelo de datos conceptual/físico | ✅ `apps/api/prisma/schema.prisma` (16 módulos modelados) |
-| Diccionario de datos formal | ⬜ `docs/arquitectura/diccionario-datos.md` no creado todavía (el schema de Prisma es la fuente de verdad actual, falta su versión documental) |
-| ADR-003 (autenticación) | ⬜ Falta formalizar como ADR independiente (la decisión ya está tomada e implementada: JWT + refresh rotativo) |
-| ADR-004 (almacenamiento de archivos) | 🚫 No hay solución de almacenamiento de archivos definida (afecta `documentUrl` en imagenología/certificados) |
+| Diccionario de datos formal | ✅ `docs/arquitectura/diccionario-datos.md` — generado a partir de `schema.prisma` (31 entidades, 12 enumeraciones) |
+| ADR-003 (autenticación) | ✅ `docs/arquitectura/decisiones/ADR-003-autenticacion.md` |
+| ADR-004 (almacenamiento de archivos) | 🟡 **Propuesto, no aceptado** — `docs/arquitectura/decisiones/ADR-004-almacenamiento.md` presenta opciones; requiere que tú elijas una (implica costos/cuenta externa, ver `docs/gestion/pendientes-manuales.md`) |
 
 ## Fase 4 — Preparación ✅ (local) / 🟡 (CI)
 
@@ -49,8 +49,8 @@
 | `package.json` raíz (workspaces) | ✅ |
 | Configuración local (`.env.example`, `docker-compose.yml`, `Dockerfile`) | ✅ |
 | Instrucciones de instalación (`README.md`) | ✅ |
-| CI básico (lint/build/test) | 🟡 `.github/workflows/ci.yml` creado, no validado corriendo en un pipeline real |
-| Validación real del proyecto (`npm install`, `prisma validate`, `prisma migrate dev`) | ⬜ **No ejecutado todavía** — el entorno de generación de este código no tiene acceso a red/npm. Es el primer paso que debes correr tú localmente. |
+| CI básico (lint/build/test) | 🟡 `.github/workflows/ci.yml` creado, no validado corriendo en un pipeline real — **acción manual** |
+| Validación real del proyecto (`npm install`, `prisma validate`, `prisma migrate dev`) | ⬜ **No ejecutado todavía** — el entorno de generación de este código no tiene acceso a red/npm. **Acción manual**, ver `docs/gestion/pendientes-manuales.md` y `docs/despliegue/instalacion-local.md`. |
 
 ## Fase 5 — Desarrollo incremental (backend) — 🟡 en curso
 
@@ -115,33 +115,36 @@
 
 | Elemento | Estado |
 |---|---|
-| Pruebas unitarias | 🟡 Solo 1 prueba de ejemplo (`duplicate-detection.util.spec.ts`) |
-| Pruebas de integración | ⬜ |
+| Pruebas unitarias | 🟡 3 archivos de prueba: detección de duplicados, solapamiento de citas (`AppointmentsService`), dispensación FIFO y validaciones de farmacia (`PharmacyService`). Cubre los casos de mayor riesgo identificados en `docs/pruebas/estrategia-de-pruebas.md`, pero faltan la mayoría de servicios. |
+| Pruebas de integración | ⬜ Requiere una base de datos de prueba real — **acción manual** (ver guía de instalación) |
 | Pruebas de API (end-to-end contra endpoints reales) | ⬜ |
-| Pruebas de interfaz | ⬜ |
-| Pruebas de seguridad | ⬜ |
-| Pruebas de accesibilidad | ⬜ |
-| Pruebas de rendimiento | ⬜ |
-| `docs/pruebas/*` | ⬜ Ningún documento de esta carpeta creado todavía |
+| Pruebas de interfaz | ⬜ A propósito, se descarta sobre el frontend provisional |
+| Pruebas de seguridad | ⬜ Requiere herramienta/auditoría externa — **acción manual** |
+| Pruebas de accesibilidad | ⬜ A propósito, se hará sobre el frontend oficial |
+| Pruebas de rendimiento | ⬜ Requiere entorno real — **acción manual** |
+| `docs/pruebas/*` | ✅ `estrategia-de-pruebas.md` creado, con priorización explícita de qué probar primero |
 
 ## Fase 7 — Preparación para producción ⬜
 
 | Elemento | Estado |
 |---|---|
-| Documentación de despliegue (`docs/despliegue/*`) | ⬜ |
-| Monitoreo y alertas | ⬜ |
-| Copias de seguridad y restauración probada | ⬜ |
+| Documentación de despliegue (`docs/despliegue/*`) | ✅ `instalacion-local.md` y `entornos-y-configuracion.md` creados. Falta `despliegue-produccion.md` y `rollback.md`, que dependen de elegir un hosting real (**acción manual** pendiente). |
+| Monitoreo y alertas | 🟡 `docs/operacion/monitoreo-y-alertas.md` — plan documentado (qué monitorear y por qué, ligado a lo que ya audita el código); implementación real pendiente de un entorno desplegado |
+| Copias de seguridad y restauración probada | 🟡 `docs/operacion/copias-y-restauracion.md` — política y procedimiento documentados; la ejecución y prueba real son **acción manual** |
 | Continuidad y recuperación ante desastres | ⬜ |
 | Manual de soporte | ⬜ |
-| Manuales de usuario por perfil (`docs/manuales/*`) | ⬜ |
-| Revisión de obligaciones normativas aplicables | ⬜ **Obligatorio antes de producción real** — no se ha hecho ninguna revisión legal/normativa |
+| Manuales de usuario por perfil (`docs/manuales/*`) | ⬜ Pospuesto a propósito hasta tener el frontend oficial (no tiene sentido documentar capturas de pantalla de la interfaz provisional) |
+| Revisión de obligaciones normativas aplicables | ⬜ **Obligatorio antes de producción real — acción manual**, no se ha hecho ninguna revisión legal/normativa |
 
 ---
 
 ## Resumen ejecutivo del estado actual
 
 - **Backend:** prácticamente completo en estructura para los 16 módulos no excluidos (✅/🟡), con reglas clínicas específicas deliberadamente sin implementar donde requieren validación profesional.
-- **Frontend:** 4 de ~16 pantallas provisionales construidas (Login, Pacientes, Citas, Historia clínica). El resto del flujo operativo (consultas, órdenes, laboratorio, imagenología, prescripciones, farmacia, inventario, admisiones, enfermería, certificados, notificaciones, auditoría) **no tiene interfaz todavía**, aunque el backend ya lo soporta.
-- **Nunca ejecutado de verdad:** el proyecto no se ha corrido con `npm install` ni contra una base de datos real — eso es, honestamente, el primer paso crítico antes de seguir sumando funcionalidades.
-- **No empezado en absoluto:** pruebas más allá de un ejemplo, documentación de despliegue/operación/manuales, diseño visual oficial, y toda revisión normativa/legal.
+- **Frontend:** 9 de ~16 pantallas provisionales construidas (Login, Pacientes, Citas, Historia clínica, Consultas, Órdenes, Prescripciones, Admisiones, Farmacia). Faltan: Enfermería, Laboratorio, Imagenología, Inventario, Certificados, Notificaciones, vista de Auditoría.
+- **Documentación técnica:** ADR-001 a ADR-003 aceptados, ADR-004 propuesto (pendiente de tu elección), diccionario de datos generado, estrategia de pruebas, guías de instalación/entornos, y planes de monitoreo y backups documentados.
+- **Pruebas automatizadas:** 3 archivos (duplicados de pacientes, solapamiento de citas, dispensación de farmacia) — cubren los casos de mayor riesgo identificados, pero la mayoría de servicios siguen sin prueba.
+- **Nunca ejecutado de verdad:** el proyecto no se ha corrido con `npm install` ni contra una base de datos real — ver `docs/gestion/pendientes-manuales.md`, es el primer paso crítico antes de seguir sumando funcionalidades.
+- **No empezado en absoluto:** diseño visual oficial, manuales de usuario (pospuestos a propósito hasta tener ese diseño), y toda revisión normativa/legal real.
 - **Excluido por decisión, no por olvido:** facturación, integraciones externas, portal del paciente, reportes avanzados.
+- **Todo lo que requiere una decisión, una cuenta externa o la ejecución de un comando está consolidado en `docs/gestion/pendientes-manuales.md`** — revísalo y márcalo a medida que avances.
